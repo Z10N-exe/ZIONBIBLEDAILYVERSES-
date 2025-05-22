@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zion Daily Bread - Your Daily Spiritual Nourishment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bg-zion {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+        }
+        .verse-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .verse-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .notification-bell {
+            animation: ring 2s ease infinite;
+        }
+        @keyframes ring {
+            0% { transform: rotate(0deg); }
+            5% { transform: rotate(15deg); }
+            10% { transform: rotate(-15deg); }
+            15% { transform: rotate(15deg); }
+            20% { transform: rotate(-15deg); }
+            25% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .bible-text {
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+        .verse-highlight {
+            background-color: rgba(253, 187, 45, 0.3);
+            border-left: 3px solid #fdbb2d;
+            padding-left: 10px;
+        }
+        .chapter-nav {
+            transition: all 0.2s ease;
+        }
+        .chapter-nav:hover {
+            transform: scale(1.1);
+        }
+        .book-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .book-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .book-list::-webkit-scrollbar-thumb {
+            background-color: rgba(26, 42, 108, 0.5);
+            border-radius: 3px;
+        }
+        .loading {
+            color: #1a2a6c;
+            font-style: italic;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #1a2a6c;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .translation-toggle button.active {
+            background-color: #1a2a6c;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-zion text-white sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-bible text-3xl"></i>
+                    <h1 class="text-2xl md:text-3xl font-bold">Zion Daily Bread</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="bibleReaderBtn" class="hidden md:block bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-full font-medium transition">Bible Reader</button>
+                    <button id="notificationBtn" class="relative">
+                        <i class="fas fa-bell text-2xl notification-bell"></i>
+                        <span id="notificationCount" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">0</span>
+                    </button>
+                    <button class="bg-white text-zion px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition">Sign In</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="md:hidden bg-zion text-white py-2 px-4 flex justify-between">
+        <button id="mobileMenuBtn" class="text-xl"><i class="fas fa-bars"></i></button>
+        <button id="mobileBibleBtn" class="text-xl"><i class="fas fa-book-bible"></i></button>
+    </div>
+
+    <!-- Mobile Menu Dropdown -->
+    <div id="mobileMenu" class="hidden bg-white shadow-lg rounded-b-lg absolute w-full z-40">
+        <div class="p-4 space-y-3">
+            <a href="#" class="block py-2 px-4 hover:bg-gray-100 rounded">Home</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-100 rounded">Today's Verse</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-100 rounded">Bible Reader</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-100 rounded">Devotionals</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-100 rounded">Sign In</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="bg-zion text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Daily Bread from Zion</h2>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Receive your daily spiritual nourishment with Bible verses delivered straight to your device</p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button class="bg-white text-zion px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition">Get Started</button>
+                <button class="bg-transparent border-2 border-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-zion transition">Learn More</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Today's Verse -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center">Today's Spiritual Nourishment</h2>
+            <div class="max-w-3xl mx-auto bg-white rounded-xl verse-card p-8 shadow-lg">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-2xl font-bold text-zion">John 6:35</h3>
+                        <p class="text-gray-500">King James Version</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button class="text-gray-400 hover:text-zion"><i class="fas fa-bookmark"></i></button>
+                        <button class="text-gray-400 hover:text-zion"><i class="fas fa-share-alt"></i></button>
+                    </div>
+                </div>
+                <p class="text-xl mb-6 leading-relaxed">"And Jesus said unto them, I am the bread of life: he that cometh to me shall never hunger; and he that believeth on me shall never thirst."</p>
+                <div class="flex justify-between items-center">
+                    <div class="flex space-x-2">
+                        <button class="bg-zion text-white px-4 py-2 rounded-full text-sm hover:bg-opacity-90">Read Full Chapter</button>
+                        <button class="bg-gray-100 text-zion px-4 py-2 rounded-full text-sm hover:bg-gray-200">Listen</button>
+                    </div>
+                    <button class="text-zion font-semibold hover:underline">View in Context</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Translation Toggle -->
+        <section class="mb-8 text-center">
+            <h2 class="text-2xl font-bold mb-4">Select Bible Translation</h2>
+            <div class="translation-toggle flex justify-center gap-4">
+                <button data-translation="KJV" class="active bg-zion text-white px-6 py-2 rounded-full font-medium">King James Version (KJV)</button>
+                <button data-translation="BBE" class="bg-gray-100 text-gray-800 px-6 py-2 rounded-full font-medium">Bible in Basic English (BBE)</button>
+            </div>
+        </section>
+
+        <!-- KJV Bible Reader Section -->
+        <section id="kjvReader" class="mb-16 bg-white rounded-xl shadow-lg overflow-hidden" role="region" aria-label="KJV Bible Reader">
+            <div class="flex flex-col md:flex-row">
+                <!-- Bible Book List -->
+                <div class="w-full md:w-1/4 bg-gray-50 p-4 border-r">
+                    <div class="mb-4">
+                        <h3 class="font-bold text-lg mb-2">Bible Version</h3>
+                        <p class="text-gray-700">King James Version (KJV)</p>
+                    </div>
+                    <div class="book-list">
+                        <h3 class="font-bold text-lg mb-2">Old Testament</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-1 gap-1 mb-4">
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Genesis">Genesis</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Exodus">Exodus</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Leviticus">Leviticus</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Numbers">Numbers</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Deuteronomy">Deuteronomy</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Joshua">Joshua</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Judges">Judges</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ruth">Ruth</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Samuel">1 Samuel</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Samuel">2 Samuel</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Kings">1 Kings</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Kings">2 Kings</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Chronicles">1 Chronicles</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Chronicles">2 Chronicles</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ezra">Ezra</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Nehemiah">Nehemiah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Esther">Esther</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Job">Job</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Psalms">Psalms</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Proverbs">Proverbs</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ecclesiastes">Ecclesiastes</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Song of Solomon">Song of Solomon</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Isaiah">Isaiah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Jeremiah">Jeremiah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Lamentations">Lamentations</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ezekiel">Ezekiel</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Daniel">Daniel</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Hosea">Hosea</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Joel">Joel</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Amos">Amos</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Obadiah">Obadiah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Jonah">Jonah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Micah">Micah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Nahum">Nahum</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Habakkuk">Habakkuk</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Zephaniah">Zephaniah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Haggai">Haggai</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Zechariah">Zechariah</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Malachi">Malachi</button>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">New Testament</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-1 gap-1">
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Matthew">Matthew</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Mark">Mark</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Luke">Luke</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="John">John</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Acts">Acts</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Romans">Romans</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Corinthians">1 Corinthians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Corinthians">2 Corinthians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Galatians">Galatians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ephesians">Ephesians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Philippians">Philippians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Colossians">Colossians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Thessalonians">1 Thessalonians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Thessalonians">2 Thessalonians</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Timothy">1 Timothy</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Timothy">2 Timothy</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Titus">Titus</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Philemon">Philemon</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Hebrews">Hebrews</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="James">James</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Peter">1 Peter</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Peter">2 Peter</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 John">1 John</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 John">2 John</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="3 John">3 John</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Jude">Jude</button>
+                            <button class="kjv-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Revelation">Revelation</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- KJV Bible Text Display -->
+                <div class="w-full md:w-3/4 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="kjvCurrentBookChapter" class="text-2xl font-bold text-zion">John 6</h2>
+                        <div class="flex items-center space-x-4">
+                            <button id="kjvPrevChapter" class="chapter-nav text-zion hover:text-zion-dark" aria-label="Previous Chapter">
+                                <i class="fas fa-chevron-left text-xl"></i>
+                            </button>
+                            <select id="kjvChapterSelect" class="border rounded px-3 py-1" aria-label="Select Chapter">
+                                <!-- Populated dynamically -->
+                            </select>
+                            <button id="kjvNextChapter" class="chapter-nav text-zion hover:text-zion-dark" aria-label="Next Chapter">
+                                <i class="fas fa-chevron-right text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="kjvBibleText" class="bible-text">
+                        <p class="mb-4 loading">Loading Bible text... <span class="spinner"></span></p>
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button class="flex items-center text-zion hover:underline">
+                            <i class="fas fa-bookmark mr-2"></i> Bookmark this chapter
+                        </button>
+                        <div class="flex space-x-4">
+                            <button class="flex items-center text-zion hover:underline">
+                                <i class="fas fa-share-alt mr-2"></i> Share
+                            </button>
+                            <button class="flex items-center text-zion hover:underline">
+                                <i class="fas fa-volume-up mr-2"></i> Listen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BBE Bible Reader Section -->
+        <section id="bbeReader" class="hidden mb-16 bg-white rounded-xl shadow-lg overflow-hidden" role="region" aria-label="BBE Bible Reader">
+            <div class="flex flex-col md:flex-row">
+                <!-- Bible Book List -->
+                <div class="w-full md:w-1/4 bg-gray-50 p-4 border-r">
+                    <div class="mb-4">
+                        <h3 class="font-bold text-lg mb-2">Bible Version</h3>
+                        <p class="text-gray-700">Bible in Basic English (BBE)</p>
+                    </div>
+                    <div class="book-list">
+                        <h3 class="font-bold text-lg mb-2">Old Testament</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-1 gap-1 mb-4">
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Genesis">Genesis</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Exodus">Exodus</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Leviticus">Leviticus</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Numbers">Numbers</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Deuteronomy">Deuteronomy</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Joshua">Joshua</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Judges">Judges</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ruth">Ruth</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Samuel">1 Samuel</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Samuel">2 Samuel</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Kings">1 Kings</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Kings">2 Kings</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Chronicles">1 Chronicles</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Chronicles">2 Chronicles</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ezra">Ezra</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Nehemiah">Nehemiah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Esther">Esther</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Job">Job</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Psalms">Psalms</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Proverbs">Proverbs</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ecclesiastes">Ecclesiastes</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Song of Solomon">Song of Solomon</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Isaiah">Isaiah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Jeremiah">Jeremiah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Lamentations">Lamentations</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ezekiel">Ezekiel</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Daniel">Daniel</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Hosea">Hosea</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Joel">Joel</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Amos">Amos</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Obadiah">Obadiah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Jonah">Jonah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Micah">Micah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Nahum">Nahum</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Habakkuk">Habakkuk</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Zephaniah">Zephaniah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Haggai">Haggai</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Zechariah">Zechariah</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Malachi">Malachi</button>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">New Testament</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-1 gap-1">
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Matthew">Matthew</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Mark">Mark</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Luke">Luke</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="John">John</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Acts">Acts</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Romans">Romans</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Corinthians">1 Corinthians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Corinthians">2 Corinthians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Galatians">Galatians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Ephesians">Ephesians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Philippians">Philippians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Colossians">Colossians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Thessalonians">1 Thessalonians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Thessalonians">2 Thessalonians</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Timothy">1 Timothy</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Timothy">2 Timothy</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Titus">Titus</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Philemon">Philemon</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Hebrews">Hebrews</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="James">James</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 Peter">1 Peter</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 Peter">2 Peter</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="1 John">1 John</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="2 John">2 John</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="3 John">3 John</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Jude">Jude</button>
+                            <button class="bbe-book-btn text-left px-3 py-1 hover:bg-gray-200 rounded" data-book="Revelation">Revelation</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- BBE Bible Text Display -->
+                <div class="w-full md:w-3/4 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="bbeCurrentBookChapter" class="text-2xl font-bold text-zion">John 6</h2>
+                        <div class="flex items-center space-x-4">
+                            <button id="bbePrevChapter" class="chapter-nav text-zion hover:text-zion-dark" aria-label="Previous Chapter">
+                                <i class="fas fa-chevron-left text-xl"></i>
+                            </button>
+                            <select id="bbeChapterSelect" class="border rounded px-3 py-1" aria-label="Select Chapter">
+                                <!-- Populated dynamically -->
+                            </select>
+                            <button id="bbeNextChapter" class="chapter-nav text-zion hover:text-zion-dark" aria-label="Next Chapter">
+                                <i class="fas fa-chevron-right text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="bbeBibleText" class="bible-text">
+                        <p class="mb-4 loading">Loading Bible text... <span class="spinner"></span></p>
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button class="flex items-center text-zion hover:underline">
+                            <i class="fas fa-bookmark mr-2"></i> Bookmark this chapter
+                        </button>
+                        <div class="flex space-x-4">
+                            <button class="flex items-center text-zion hover:underline">
+                                <i class="fas fa-share-alt mr-2"></i> Share
+                            </button>
+                            <button class="flex items-center text-zion hover:underline">
+                                <i class="fas fa-volume-up mr-2"></i> Listen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notification Setup -->
+        <section id="notificationSetup" class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center">Get Daily Notifications</h2>
+            <div class="max-w-3xl mx-auto bg-white rounded-xl p-8 shadow-lg">
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4">1. Choose Your Preferred Time</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <button class="bg-zion text-white px-6 py-3 rounded-full font-medium">Morning</button>
+                        <button class="bg-gray-100 text-gray-800 px-6 py-3 rounded-full font-medium">Noon</button>
+                        <button class="bg-gray-100 text-gray-800 px-6 py-3 rounded-full font-medium">Evening</button>
+                        <button class="bg-gray-100 text-gray-800 px-6 py-3 rounded-full font-medium">Custom Time</button>
+                    </div>
+                    <div class="mt-4 hidden" id="customTime">
+                        <label class="block text-gray-700 mb-2">Select Time:</label>
+                        <input type="time" class="border rounded-lg px-4 py-2 w-full max-w-xs" required>
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4">2. Choose Your Preferred Version</h3>
+                    <select class="border rounded-lg px-4 py-3 w-full max-w-md">
+                        <option selected>King James Version (KJV)</option>
+                        <option>Bible in Basic English (BBE)</option>
+                        <option disabled>New International Version (NIV)</option>
+                        <option disabled>English Standard Version (ESV)</option>
+                        <option disabled>New Living Translation (NLT)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4">3. Choose Notification Method</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="border rounded-lg p-4 text-center hover:border-zion cursor-pointer">
+                            <i class="fas fa-envelope text-4xl text-zion mb-3"></i>
+                            <h4 class="font-semibold">Email</h4>
+                        </div>
+                        <div class="border rounded-lg p-4 text-center hover:border-zion cursor-pointer">
+                            <i class="fas fa-mobile-alt text-4xl text-zion mb-3"></i>
+                            <h4 class="font-semibold">SMS</h4>
+                        </div>
+                        <div class="border rounded-lg p-4 text-center hover:border-zion cursor-pointer border-zion">
+                            <i class="fas fa-bell text-4xl text-zion mb-3"></i>
+                            <h4 class="font-semibold">Push Notification</h4>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4">4. Enter Contact Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Email (for Email notifications):</label>
+                            <input id="notificationEmail" type="email" class="border rounded-lg px-4 py-2 w-full" placeholder="your.email@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Phone (for SMS notifications):</label>
+                            <input id="notificationPhone" type="tel" class="border rounded-lg px-4 py-2 w-full" placeholder="+1234567890">
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-zion text-white py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition">Activate Daily Notifications</button>
+            </div>
+        </section>
+
+        <!-- Recent Verses -->
+        <section>
+            <h2 class="text-3xl font-bold mb-8 text-center">Recent Daily Bread</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl verse-card p-6 shadow-md">
+                    <h3 class="text-xl font-bold text-zion mb-2">Psalm 23:1</h3>
+                    <p class="text-gray-500 mb-4">King James Version</p>
+                    <p class="mb-4">"The LORD is my shepherd; I shall not want."</p>
+                    <button class="text-zion font-medium hover:underline">Read More</button>
+                </div>
+                <div class="bg-white rounded-xl verse-card p-6 shadow-md">
+                    <h3 class="text-xl font-bold text-zion mb-2">Philippians 4:13</h3>
+                    <p class="text-gray-500 mb-4">King James Version</p>
+                    <p class="mb-4">"I can do all things through Christ which strengtheneth me."</p>
+                    <button class="text-zion font-medium hover:underline">Read More</button>
+                </div>
+                <div class="bg-white rounded-xl verse-card p-6 shadow-md">
+                    <h3 class="text-xl font-bold text-zion mb-2">Jeremiah 29:11</h3>
+                    <p class="text-gray-500 mb-4">King James Version</p>
+                    <p class="mb-4">"For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end."</p>
+                    <button class="text-zion font-medium hover:underline">Read More</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Testimonials -->
+    <section class="bg-gray-100 py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center">What Our Zion Community Says</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-zion text-white flex items-center justify-center text-xl font-bold mr-4">S</div>
+                        <div>
+                            <h4 class="font-bold">DIVINE N.</h4>
+                            <p class="text-gray-500 text-sm">Member since 2021</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"Zion Daily Bread has transformed my morning routine. Starting my day with scripture keeps me grounded and focused on what truly matters."</p>
+                    <div class="mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-zion text-white flex items-center justify-center text-xl font-bold mr-4">M</div>
+                        <div>
+                            <h4 class="font-bold">VICTOR J.</h4>
+                            <p class="text-gray-500 text-sm">Member since 2022</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"As a busy professional, I often struggled to make time for Bible study. Now I get nourishing scripture delivered right when I need it most."</p>
+                    <div class="mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-zion text-white flex items-center justify-center text-xl font-bold mr-4">A</div>
+                        <div>
+                            <h4 class="font-bold">Amina K.</h4>
+                            <p class="text-gray-500 text-sm">Member since 2020</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"The Zion community and daily verses have helped me grow spiritually in ways I never imagined. It's like having a personal spiritual mentor."</p>
+                    <div class="mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-zion text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Zion Daily Bread</h3>
+                    <p>Nourishing souls with daily scripture since 2018.</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-white hover:text-gray-200"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white hover:text-gray-200"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white hover:text-gray-200"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white hover:text-gray-200"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:underline">Home</a></li>
+                        <li><a href="#" class="hover:underline">Today's Verse</a></li>
+                        <li><a href="#" class="hover:underline">Bible Reader</a></li>
+                        <li><a href="#" class="hover:underline">Devotionals</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:underline">Reading Plans</a></li>
+                        <li><a href="#" class="hover:underline">Prayer Requests</a></li>
+                        <li><a href="#" class="hover:underline">Study Tools</a></li>
+                        <li><a href="#" class="hover:underline">Community</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Stay Connected</h4>
+                    <p class="mb-4">Subscribe to our newsletter for weekly inspiration</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Your email" class="px-4 py-2 rounded-l-lg w-full text-gray-800">
+                        <button class="bg-white text-zion px-4 py-2 rounded-r-lg font-semibold"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white border-opacity-20 mt-8 pt-8 text-center">
+                <p>© 2025 Zion Daily Bread. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Your Notifications</h3>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="notificationList" class="space-y-4 max-h-96 overflow-y-auto">
+                    <!-- Notifications added dynamically -->
+                </div>
+                <button class="w-full mt-4 bg-zion text-white py-2 rounded-lg font-medium">Mark All as Read</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Notification Modal Toggle
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationModal = document.getElementById('notificationModal');
+        const closeModal = document.getElementById('closeModal');
+        const markAsRead = document.querySelector('#notificationModal button');
+        const notificationCount = document.getElementById('notificationCount');
+
+        notificationBtn.addEventListener('click', () => {
+            notificationModal.classList.toggle('hidden');
+        });
+
+        closeModal.addEventListener('click', () => {
+            notificationModal.classList.add('hidden');
+        });
+
+        markAsRead.addEventListener('click', () => {
+            notificationCount.textContent = '0';
+            notificationCount.classList.add('hidden');
+            document.getElementById('notificationList').innerHTML = '';
+        });
+
+        // Show custom time input
+        const timeButtons = document.querySelectorAll('#notificationSetup .bg-gray-100');
+        const customTime = document.getElementById('customTime');
+        const customTimeInput = document.querySelector('#customTime input[type="time"]');
+
+        timeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.textContent === 'Custom Time') {
+                    customTime.classList.remove('hidden');
+                } else {
+                    customTime.classList.add('hidden');
+                }
+
+                timeButtons.forEach(btn => {
+                    btn.classList.remove('bg-zion', 'text-white');
+                    btn.classList.add('bg-gray-100', 'text-gray-800');
+                });
+
+                button.classList.remove('bg-gray-100', 'text-gray-800');
+                button.classList.add('bg-zion', 'text-white');
+            });
+        });
+
+        // Bible Reader Toggle
+        const bibleReaderBtn = document.getElementById('bibleReaderBtn');
+        const mobileBibleBtn = document.getElementById('mobileBibleBtn');
+        const kjvReader = document.getElementById('kjvReader');
+        const bbeReader = document.getElementById('bbeReader');
+
+        bibleReaderBtn.addEventListener('click', () => {
+            kjvReader.classList.toggle('hidden');
+            if (!kjvReader.classList.contains('hidden')) {
+                kjvReader.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        mobileBibleBtn.addEventListener('click', () => {
+            kjvReader.classList.toggle('hidden');
+            if (!kjvReader.classList.contains('hidden')) {
+                kjvReader.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Translation Toggle
+        const translationButtons = document.querySelectorAll('.translation-toggle button');
+        translationButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const translation = button.dataset.translation;
+                translationButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.classList.add('bg-gray-100', 'text-gray-800');
+                    btn.classList.remove('bg-zion', 'text-white');
+                });
+                button.classList.add('active', 'bg-zion', 'text-white');
+                button.classList.remove('bg-gray-100', 'text-gray-800');
+
+                kjvReader.classList.toggle('hidden', translation !== 'KJV');
+                bbeReader.classList.toggle('hidden', translation !== 'BBE');
+
+                if (translation === 'KJV' && !kjvData.books.length) {
+                    loadKJV();
+                } else if (translation === 'BBE' && !bbeData.books.length) {
+                    loadBBE();
+                }
+            });
+        });
+
+        // Bible Navigation
+        const kjvBookButtons = document.querySelectorAll('.kjv-book-btn');
+        const kjvCurrentBookChapter = document.getElementById('kjvCurrentBookChapter');
+        const kjvChapterSelect = document.getElementById('kjvChapterSelect');
+        const kjvPrevChapter = document.getElementById('kjvPrevChapter');
+        const kjvNextChapter = document.getElementById('kjvNextChapter');
+        const kjvBibleText = document.getElementById('kjvBibleText');
+
+        const bbeBookButtons = document.querySelectorAll('.bbe-book-btn');
+        const bbeCurrentBookChapter = document.getElementById('bbeCurrentBookChapter');
+        const bbeChapterSelect = document.getElementById('bbeChapterSelect');
+        const bbePrevChapter = document.getElementById('bbePrevChapter');
+        const bbeNextChapter = document.getElementById('bbeNextChapter');
+        const bbeBibleText = document.getElementById('bbeBibleText');
+
+        let kjvData = { books: [] };
+        let bbeData = { books: [] };
+        let kjvCurrentBook = 'John';
+        let kjvCurrentChapter = 6;
+        let bbeCurrentBook = 'John';
+        let bbeCurrentChapter = 6;
+
+        // Parse BBE.txt (format: ### Book\n[Chapter:Verse] Text)
+        function parseBBEText(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const books = [];
+            let currentBook = null;
+
+            lines.forEach(line => {
+                // Book header (e.g., ### Genesis)
+                if (line.startsWith('### ')) {
+                    const bookName = line.replace('### ', '').trim();
+                    currentBook = {
+                        name: bookName,
+                        chapters: []
+                    };
+                    books.push(currentBook);
+                    return;
+                }
+
+                // Verse line (e.g., [1:1] Text)
+                const match = line.match(/^\[(\d+):(\d+)\]\s(.+)$/);
+                if (match && currentBook) {
+                    const [, chapterNum, verseNum, verseText] = match;
+                    const chapter = parseInt(chapterNum);
+                    const verse = parseInt(verseNum);
+
+                    // Find or create chapter
+                    let chapterObj = currentBook.chapters.find(c => c.chapter === chapter);
+                    if (!chapterObj) {
+                        chapterObj = { chapter, verses: [] };
+                        currentBook.chapters.push(chapterObj);
+                    }
+
+                    chapterObj.verses.push({ verse, text: verseText.trim() });
+                }
+            });
+
+            // Sort chapters and verses
+            books.forEach(book => {
+                book.chapters.sort((a, b) => a.chapter - b.chapter);
+                book.chapters.forEach(chapter => {
+                    chapter.verses.sort((a, b) => a.verse - b.verse);
+                });
+            });
+
+            return { translation: 'Bible in Basic English', books };
+        }
+
+        // Load KJV JSON
+        async function loadKJV() {
+            try {
+                kjvBibleText.innerHTML = '<p class="mb-4 loading">Loading Bible text... <span class="spinner"></span></p>';
+                const response = await fetch('/data/KJV.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch KJV.json: ${response.status} ${response.statusText}`);
+                }
+                kjvData = await response.json();
+                if (!kjvData.books || !Array.isArray(kjvData.books)) {
+                    throw new Error('Invalid JSON structure: Missing or invalid "books" array');
+                }
+                updateKJVChapterSelect();
+                loadKJVChapter();
+            } catch (error) {
+                console.error('Load KJV error:', error);
+                kjvBibleText.innerHTML = `
+                    <p class="text-red-500">Error loading KJV Bible data: ${error.message}</p>
+                    <button id="kjvRetryLoad" class="mt-4 bg-zion text-white px-4 py-2 rounded-full">Retry</button>
+                `;
+                document.getElementById('kjvRetryLoad')?.addEventListener('click', loadKJV);
+            }
+        }
+
+        // Load and parse BBE.txt
+        async function loadBBE() {
+            try {
+                bbeBibleText.innerHTML = '<p class="mb-4 loading">Loading Bible text... <span class="spinner"></span></p>';
+                const response = await fetch('/data/BBE.txt');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch BBE.txt: ${response.status} ${response.statusText}`);
+                }
+                const text = await response.text();
+                bbeData = parseBBEText(text);
+                if (!bbeData.books || !Array.isArray(bbeData.books)) {
+                    throw new Error('Invalid BBE structure: Missing or invalid "books" array');
+                }
+                updateBBEChapterSelect();
+                loadBBEChapter();
+            } catch (error) {
+                console.error('Load BBE error:', error);
+                bbeBibleText.innerHTML = `
+                    <p class="text-red-500">Error loading BBE Bible data: ${error.message}</p>
+                    <button id="bbeRetryLoad" class="mt-4 bg-zion text-white px-4 py-2 rounded-full">Retry</button>
+                `;
+                document.getElementById('bbeRetryLoad')?.addEventListener('click', loadBBE);
+            }
+        }
+
+        // Update KJV chapter select dropdown
+        function updateKJVChapterSelect() {
+            kjvChapterSelect.innerHTML = '';
+            const selectedBook = kjvData.books.find(b => b.name === kjvCurrentBook);
+            const chapterCount = selectedBook ? selectedBook.chapters.length : 1;
+
+            for (let i = 1; i <= chapterCount; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === kjvCurrentChapter) {
+                    option.selected = true;
+                }
+                kjvChapterSelect.appendChild(option);
+            }
+        }
+
+        // Update BBE chapter select dropdown
+        function updateBBEChapterSelect() {
+            bbeChapterSelect.innerHTML = '';
+            const selectedBook = bbeData.books.find(b => b.name === bbeCurrentBook);
+            const chapterCount = selectedBook ? selectedBook.chapters.length : 1;
+
+            for (let i = 1; i <= chapterCount; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === bbeCurrentChapter) {
+                    option.selected = true;
+                }
+                bbeChapterSelect.appendChild(option);
+            }
+        }
+
+        // Load KJV chapter content
+        function loadKJVChapter() {
+            const selectedBook = kjvData.books.find(b => b.name === kjvCurrentBook);
+            kjvCurrentBookChapter.textContent = `${kjvCurrentBook} ${kjvCurrentChapter}`;
+
+            if (!selectedBook || !selectedBook.chapters[kjvCurrentChapter - 1]) {
+                kjvBibleText.innerHTML = '<p class="text-red-500">Chapter not found.</p>';
+                return;
+            }
+
+            const verses = selectedBook.chapters[kjvCurrentChapter - 1].verses;
+            kjvBibleText.innerHTML = '';
+            verses.forEach(verse => {
+                const verseElement = document.createElement('p');
+                verseElement.className = 'mb-4';
+                verseElement.innerHTML = `<span class="verse-num font-bold text-zion">${verse.verse}</span> ${verse.text}`;
+                verseElement.addEventListener('click', () => {
+                    document.querySelectorAll('#kjvBibleText .verse-highlight').forEach(el => {
+                        el.classList.remove('verse-highlight');
+                    });
+                    verseElement.classList.add('verse-highlight');
+                });
+                kjvBibleText.appendChild(verseElement);
+            });
+        }
+
+        // Load BBE chapter content
+        function loadBBEChapter() {
+            const selectedBook = bbeData.books.find(b => b.name === bbeCurrentBook);
+            bbeCurrentBookChapter.textContent = `${bbeCurrentBook} ${bbeCurrentChapter}`;
+
+            if (!selectedBook || !selectedBook.chapters[bbeCurrentChapter - 1]) {
+                bbeBibleText.innerHTML = '<p class="text-red-500">Chapter not found.</p>';
+                return;
+            }
+
+            const verses = selectedBook.chapters[bbeCurrentChapter - 1].verses;
+            bbeBibleText.innerHTML = '';
+            verses.forEach(verse => {
+                const verseElement = document.createElement('p');
+                verseElement.className = 'mb-4';
+                verseElement.innerHTML = `<span class="verse-num font-bold text-zion">${verse.verse}</span> ${verse.text}`;
+                verseElement.addEventListener('click', () => {
+                    document.querySelectorAll('#bbeBibleText .verse-highlight').forEach(el => {
+                        el.classList.remove('verse-highlight');
+                    });
+                    verseElement.classList.add('verse-highlight');
+                });
+                bbeBibleText.appendChild(verseElement);
+            });
+        }
+
+        // KJV Book navigation
+        kjvBookButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                kjvCurrentBook = button.dataset.book;
+                kjvCurrentChapter = 1;
+                updateKJVChapterSelect();
+                loadKJVChapter();
+
+                kjvBookButtons.forEach(btn => {
+                    btn.classList.remove('bg-zion', 'text-white');
+                    btn.classList.add('hover:bg-gray-200');
+                });
+                button.classList.add('bg-zion', 'text-white');
+                button.classList.remove('hover:bg-gray-200');
+            });
+        });
+
+        // BBE Book navigation
+        bbeBookButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                bbeCurrentBook = button.dataset.book;
+                bbeCurrentChapter = 1;
+                updateBBEChapterSelect();
+                loadBBEChapter();
+
+                bbeBookButtons.forEach(btn => {
+                    btn.classList.remove('bg-zion', 'text-white');
+                    btn.classList.add('hover:bg-gray-200');
+                });
+                button.classList.add('bg-zion', 'text-white');
+                button.classList.remove('hover:bg-gray-200');
+            });
+        });
+
+        // KJV Chapter navigation
+        kjvPrevChapter.addEventListener('click', () => {
+            if (kjvCurrentChapter > 1) {
+                kjvCurrentChapter--;
+                kjvChapterSelect.value = kjvCurrentChapter;
+                loadKJVChapter();
+            }
+        });
+
+        kjvNextChapter.addEventListener('click', () => {
+            const selectedBook = kjvData.books.find(b => b.name === kjvCurrentBook);
+            if (selectedBook && kjvCurrentChapter < selectedBook.chapters.length) {
+                kjvCurrentChapter++;
+                kjvChapterSelect.value = kjvCurrentChapter;
+                loadKJVChapter();
+            }
+        });
+
+        kjvChapterSelect.addEventListener('change', () => {
+            kjvCurrentChapter = parseInt(kjvChapterSelect.value);
+            loadKJVChapter();
+        });
+
+        // BBE Chapter navigation
+        bbePrevChapter.addEventListener('click', () => {
+            if (bbeCurrentChapter > 1) {
+                bbeCurrentChapter--;
+                bbeChapterSelect.value = bbeCurrentChapter;
+                loadBBEChapter();
+            }
+        });
+
+        bbeNextChapter.addEventListener('click', () => {
+            const selectedBook = bbeData.books.find(b => b.name === bbeCurrentBook);
+            if (selectedBook && bbeCurrentChapter < selectedBook.chapters.length) {
+                bbeCurrentChapter++;
+                bbeChapterSelect.value = bbeCurrentChapter;
+                loadBBEChapter();
+            }
+        });
+
+        bbeChapterSelect.addEventListener('change', () => {
+            bbeCurrentChapter = parseInt(bbeChapterSelect.value);
+            loadBBEChapter();
+        });
+
+        // Keyboard Navigation for Accessibility
+        function addKeyboardNavigation(sectionId, bookButtons, prevButton, nextButton, chapterSelect) {
+            bookButtons.forEach(button => {
+                button.setAttribute('tabindex', '0');
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        button.click();
+                    }
+                });
+            });
+
+            prevButton.setAttribute('tabindex', '0');
+            nextButton.setAttribute('tabindex', '0');
+            chapterSelect.setAttribute('tabindex', '0');
+
+            prevButton.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    prevButton.click();
+                }
+            });
+
+            nextButton.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    nextButton.click();
+                }
+            });
+        }
+
+        addKeyboardNavigation('kjvReader', kjvBookButtons, kjvPrevChapter, kjvNextChapter, kjvChapterSelect);
+        addKeyboardNavigation('bbeReader', bbeBookButtons, bbePrevChapter, bbeNextChapter, bbeChapterSelect);
+
+        // Notification Setup
+        const notificationTimeButtons = document.querySelectorAll('#notificationSetup .bg-gray-100');
+        const notificationMethodButtons = document.querySelectorAll('#notificationSetup .border.rounded-lg');
+        const activateNotificationBtn = document.querySelector('#notificationSetup button.w-full');
+        const notificationVersionSelect = document.querySelector('#notificationSetup select');
+        const notificationEmail = document.getElementById('notificationEmail');
+        const notificationPhone = document.getElementById('notificationPhone');
+
+        let selectedTime = 'Morning';
+        let selectedMethod = 'Push Notification';
+        let selectedVersion = 'King James Version (KJV)';
+
+        // Update notification time
+        notificationTimeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                selectedTime = button.textContent === 'Custom Time' ? customTimeInput.value : button.textContent;
+                notificationTimeButtons.forEach(btn => {
+                    btn.classList.remove('bg-zion', 'text-white');
+                    btn.classList.add('bg-gray-100', 'text-gray-800');
+                });
+                button.classList.remove('bg-gray-100', 'text-gray-800');
+                button.classList.add('bg-zion', 'text-white');
+            });
+        });
+
+        // Update custom time input
+        customTimeInput.addEventListener('change', () => {
+            if (selectedTime === 'Custom Time') {
+                selectedTime = customTimeInput.value;
+            }
+        });
+
+        // Update notification method
+        notificationMethodButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                selectedMethod = button.querySelector('h4').textContent;
+                notificationMethodButtons.forEach(btn => {
+                    btn.classList.remove('border-zion');
+                });
+                button.classList.add('border-zion');
+            });
+        });
+
+        // Update notification version
+        notificationVersionSelect.addEventListener('change', () => {
+            selectedVersion = notificationVersionSelect.value;
+        });
+
+        // Validate and save notification preferences
+        activateNotificationBtn.addEventListener('click', async () => {
+            const time = selectedTime === 'Custom Time' ? customTimeInput.value : selectedTime;
+            const email = notificationEmail.value;
+            const phone = notificationPhone.value;
+
+            // Validation
+            if (selectedMethod === 'Email' && !email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) {
+                alert('Please enter a valid email address for Email notifications.');
+                return;
+            }
+            if (selectedMethod === 'SMS' && !phone.match(/^\+\d{10,15}$/)) {
+                alert('Please enter a valid phone number (e.g., +1234567890) for SMS notifications.');
+                return;
+            }
+            if (selectedTime === 'Custom Time' && !time) {
+                alert('Please select a custom time.');
+                return;
+            }
+
+            const preferences = {
+                time: time === 'Morning' ? '08:00' : time === 'Noon' ? '12:00' : time === 'Evening' ? '18:00' : time,
+                method: selectedMethod,
+                version: selectedVersion,
+                email: selectedMethod === 'Email' ? email : null,
+                phone: selectedMethod === 'SMS' ? phone : null
+            };
+
+            if (selectedMethod === 'Push Notification' && Notification.permission !== 'granted') {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    alert('Please enable push notifications in your browser to receive daily verses.');
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch('/api/save-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(preferences)
+                });
+                if (response.ok) {
+                    alert('Daily notifications activated!');
+                    if (selectedMethod === 'Push Notification') {
+                        await registerServiceWorker();
+                    }
+                    // Update notification modal
+                    const verse = await getRandomVerse(selectedVersion);
+                    addNotification(verse.reference, verse.text);
+                } else {
+                    alert('Error saving notification preferences.');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Register service worker for push notifications
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    const subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: 'YOUR_PUBLIC_VAPID_KEY' // Replace with your VAPID public key
+                    });
+                    await fetch('/api/save-subscription', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...subscription, time: selectedTime, version: selectedVersion })
+                    });
+                } catch (error) {
+                    console.error('Service Worker registration failed:', error);
+                }
+            }
+        }
+
+        // Add notification to modal
+        function addNotification(reference, text) {
+            const notificationList = document.getElementById('notificationList');
+            const notificationItem = document.createElement('div');
+            notificationItem.className = 'p-4 bg-gray-50 rounded-lg';
+            notificationItem.innerHTML = `
+                <h4 class="font-bold text-zion">${reference}</h4>
+                <p class="text-gray-700">${text}</p>
+                <p class="text-gray-500 text-sm mt-2">${new Date().toLocaleString()}</p>
+            `;
+            notificationList.prepend(notificationItem);
+            notificationCount.textContent = parseInt(notificationCount.textContent) + 1;
+            notificationCount.classList.remove('hidden');
+        }
+
+        // Get random verse for notifications
+        async function getRandomVerse(version) {
+            let data = version === 'Bible in Basic English (BBE)' ? bbeData : kjvData;
+            if (!data.books.length) {
+                if (version === 'Bible in Basic English (BBE)') {
+                    await loadBBE();
+                    data = bbeData;
+                } else {
+                    await loadKJV();
+                    data = kjvData;
+                }
+            }
+            const book = data.books[Math.floor(Math.random() * data.books.length)];
+            const chapter = book.chapters[Math.floor(Math.random() * book.chapters.length)];
+            const verse = chapter.verses[Math.floor(Math.random() * chapter.verses.length)];
+            return {
+                reference: `${book.name} ${chapter.chapter}:${verse.verse}`,
+                text: verse.text
+            };
+        }
+
+        // Initial load
+        loadKJV();
+    </script>
+</body>
+</html>
