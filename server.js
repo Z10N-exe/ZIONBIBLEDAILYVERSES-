@@ -8,142 +8,101 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// VAPID keys for push notifications (replace with your keys)
+// VAPID keys (replace with your own)
 webpush.setVapidDetails(
     'mailto:nwebeduzion@gmail.com',
-    'BAQ6ccfZkk4gMqwyed6IBTOlhieia2DagzDSSfW86XJ3srwwxoeAZrEps4XEhseBb2eK4B57NJoKcS6dqyHmnLM', // Replace with your public VAPID key
-    'xdWLTG4SDSlSLhFik-02NXF8BJpyW-PCv1a1OdRN1X0' // Replace with your private VAPID key
+    'BAQ6ccfZkk4gMqwyed6IBTOlhieia2DagzDSSfW86XJ3srwwxoeAZrEps4XEhseBb2eK4B57NJoKcS6dqyHmnLM',
+    'xdWLTG4SDSlSLhFik-02NXF8BJpyW-PCv1a1OdRN1X0'
 );
 
-// Store notification subscriptions
 let subscriptions = [];
 
-// Parse BBE.txt
-async function parseBBEText() {
+// Load Bible data
+let kjvData = null;
+let bbeData = null;
+
+async function loadBibleData() {
     try {
-        const text = await fs.readFile(path.join(__dirname, 'public', 'data', 'BBE.txt'), 'utf8');
-        const lines = text.split('\n').filter(line => line.trim());
+        // Load KJV (JSON format)
+        const kjv = await fs.readFile(path.join(__dirname, 'public', 'data', 'KJV.json'), 'utf8');
+        kjvData = JSON.parse(kjv);
+
+        // Load BBE (TXT format)
+        const bbeText = await fs.readFile(path.join(__dirname, 'public', 'data', 'BBE.txt'), 'utf8');
+        const lines = bbeText.split('\n').filter(line => line.trim());
         const books = [];
         let currentBook = null;
 
         lines.forEach(line => {
             if (line.startsWith('### ')) {
-                const bookName = line.replace('### ', '').trim();
-                currentBook = { name: bookName, chapters: [] };
+                currentBook = { name: line.replace('### ', '').trim(), chapters: [] };
                 books.push(currentBook);
-                return;
-            }
-
-            const match = line.match(/^\[(\d+):(\d+)\]\s(.+)$/);
-            if (match && currentBook) {
-                const [, chapterNum, verseNum, verseText] = match;
-                const chapter = parseInt(chapterNum);
-                let chapterObj = currentBook.chapters.find(c => c.chapter === chapter);
-                if (!chapterObj) {
-                    chapterObj = { chapter, verses: [] };
-                    currentBook.chapters.push(chapterObj);
+            } else {
+                const match = line.match(/^\[(\d+):(\d+)\]\s(.+)$/);
+                if (match && currentBook) {
+                    const [, chapter, verse, text] = match;
+                    let chapterObj = currentBook.chapters.find(c => c.chapter === parseInt(chapter));
+                    if (!chapterObj) {
+                        chapterObj = { chapter: parseInt(chapter), verses: [] };
+                        currentBook.chapters.push(chapterObj);
+                    }
+                    chapterObj.verses.push({ verse: parseInt(verse), text: text.trim() });
                 }
-                chapterObj.verses.push({ verse: parseInt(verseNum), text: verseText.trim() });
             }
         });
 
-        books.forEach(book => {
-            book.chapters.sort((a, b) => a.chapter - b.chapter);
-            book.chapters.forEach(chapter => {
-                chapter.verses.sort((a, b) => a.verse - b.verse);
-            });
-        });
-
-        return { translation: 'Bible in Basic English', books };
-    } catch (error) {
-        console.error('Error parsing BBE.txt:', error);
-        throw error;
+        bbeData = { translation: 'Bible in Basic English', books };
+    } catch (err) {
+        console.error('Error loading Bible data:', err);
     }
 }
 
-// Load KJV JSON
-async function loadKJV() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'public', 'data', 'KJV.json'), 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error loading KJV.json:', error);
-        throw error;
-    }
-}
-
-// Cache data
-let kjvData = null;
-let bbeData = null;
-
-(async () => {
-    kjvData = await loadKJV();
-    bbeData = await parseBBEText();
-})();
-
-// Get random verse
+// Get a random verse
 function getRandomVerse(version) {
     const data = version === 'Bible in Basic English (BBE)' ? bbeData : kjvData;
-    if (!data || !data.books.length) {
-        throw new Error('Bible data not loaded');
-    }
+    if (!data || !data.books.length) throw new Error('Bible data not loaded');
+
     const book = data.books[Math.floor(Math.random() * data.books.length)];
     const chapter = book.chapters[Math.floor(Math.random() * book.chapters.length)];
     const verse = chapter.verses[Math.floor(Math.random() * chapter.verses.length)];
+
     return {
         reference: `${book.name} ${chapter.chapter}:${verse.verse}`,
         text: verse.text
     };
 }
 
-// Save notification preferences
-app.post('/api/save-notification', async (req, res) => {
-    try {
-        const { time, method, version, email, phone } = req.body;
-        subscriptions.push({ time, method, version, email, phone });
-        res.status(200).send('Notification preferences saved');
-    } catch (error) {
-        console.error('Error saving notification:', error);
-        res.status(500).send('Error saving notification');
-    }
-});
-
 // Save push subscription
-app.post('/api/save-subscription', async (req, res) => {
-    try {
-        const subscription = req.body;
-        subscriptions.push({ ...subscription, method: 'Push Notification' });
-        res.status(200).send('Subscription saved');
-    } catch (error) {
-        console.error('Error saving subscription:', error);
-        res.status(500).send('Error saving subscription');
-    }
+app.post('/api/save-subscription', (req, res) => {
+    const subscription = req.body;
+    subscriptions.push(subscription);
+    res.status(200).json({ success: true });
 });
 
-// Schedule notifications
-cron.schedule('* * * * *', async () => {
-    const now = new Date();
-    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+// Schedule daily notifications at 8 AM
+cron.schedule('0 8 * * *', async () => {  // Runs every day at 8:00 AM
+    console.log('Sending daily spiritual nourishment...');
 
     for (const sub of subscriptions) {
-        if (sub.time === currentTime && sub.method === 'Push Notification') {
-            try {
-                const verse = getRandomVerse(sub.version);
-                const payload = JSON.stringify({
-                    title: `Daily Bread: ${verse.reference}`,
-                    body: verse.text,
-                    icon: '/icon.png'
-                });
-                await webpush.sendNotification(sub, payload);
-            } catch (error) {
-                console.error('Error sending push notification:', error);
-            }
+        try {
+            const verse = getRandomVerse('King James Version (KJV)'); // or 'BBE'
+            const payload = JSON.stringify({
+                title: "🌿 Today's Spiritual Nourishment 🌿",
+                body: `${verse.reference}\n\n${verse.text}`,
+                icon: '/icon.png',
+                badge: '/badge.png'
+            });
+
+            await webpush.sendNotification(sub, payload);
+        } catch (err) {
+            console.error('Failed to send notification:', err);
         }
     }
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Initialize server
+(async () => {
+    await loadBibleData();
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+})();
